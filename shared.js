@@ -336,6 +336,81 @@
     return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   };
 
+  // ===== CAROUSEL =====
+  VB.initCarousel = function () {
+    const track = document.getElementById('heroTrack');
+    const slides = document.querySelectorAll('.carousel-slide');
+    const dots = document.querySelectorAll('.carousel-dot');
+    const prevBtn = document.getElementById('carouselPrev');
+    const nextBtn = document.getElementById('carouselNext');
+
+    if (!track || slides.length === 0) return;
+
+    let currentIndex = 0;
+    const totalSlides = slides.length;
+    let autoPlayInterval;
+
+    function goToSlide(index) {
+      if (index < 0) index = totalSlides - 1;
+      if (index >= totalSlides) index = 0;
+      
+      track.style.transform = `translateX(-${index * 100}%)`;
+      
+      slides.forEach(s => s.classList.remove('active'));
+      dots.forEach(d => d.classList.remove('active'));
+      
+      slides[index].classList.add('active');
+      if(dots[index]) dots[index].classList.add('active');
+      
+      currentIndex = index;
+    }
+
+    function nextSlide() { goToSlide(currentIndex + 1); }
+    function prevSlide() { goToSlide(currentIndex - 1); }
+
+    function startAutoPlay() {
+      stopAutoPlay();
+      autoPlayInterval = setInterval(nextSlide, 6000);
+    }
+
+    function stopAutoPlay() {
+      if (autoPlayInterval) clearInterval(autoPlayInterval);
+    }
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => { prevSlide(); startAutoPlay(); });
+    }
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => { nextSlide(); startAutoPlay(); });
+    }
+
+    dots.forEach((dot, index) => {
+      dot.addEventListener('click', () => {
+        goToSlide(index);
+        startAutoPlay();
+      });
+    });
+
+    // Touch Support
+    let startX = 0;
+    let endX = 0;
+    track.addEventListener('touchstart', (e) => {
+      startX = e.changedTouches[0].screenX;
+      stopAutoPlay();
+    }, {passive: true});
+
+    track.addEventListener('touchend', (e) => {
+      endX = e.changedTouches[0].screenX;
+      if (startX - endX > 50) nextSlide();
+      else if (endX - startX > 50) prevSlide();
+      startAutoPlay();
+    }, {passive: true});
+
+    // Initialize
+    goToSlide(0);
+    startAutoPlay();
+  };
+
   // ===== AUTO-INIT =====
   // Pages can call VB.init() or individual init functions
   VB.init = function (options = {}) {
@@ -347,6 +422,7 @@
       requestAnimationFrame(() => VB.initReveal());
     }
     if (options.smoothScroll !== false) VB.initSmoothScroll();
+    if (document.getElementById('heroTrack')) VB.initCarousel();
 
     // Apply saved language
     const settings = VB.getSettings();
