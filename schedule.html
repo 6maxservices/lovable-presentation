@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Πρόγραμμα | Vibe & Build</title>
+  <meta name="description" content="Δείτε το πρόγραμμα των επερχόμενων Vibe & Build workshops. / View the schedule of upcoming Vibe & Build workshops.">
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+  <!-- ========== HERO ========== -->
+  <section class="page-hero">
+    <span class="section-label i18n" data-el="Πρόγραμμα" data-en="Schedule">Πρόγραμμα</span>
+    <h1 class="section-title i18n" data-el="Τα Επόμενα Workshops" data-en="Upcoming Workshops">Τα Επόμενα Workshops</h1>
+    <p class="section-subtitle i18n" 
+       data-el="Κλείσε τη θέση σου σε ένα από τα επόμενα sessions και έλα να χτίσουμε μαζί." 
+       data-en="Book your spot in one of the upcoming sessions and let's build together.">
+       Κλείσε τη θέση σου σε ένα από τα επόμενα sessions και έλα να χτίσουμε μαζί.
+    </p>
+  </section>
+
+  <!-- ========== SCHEDULE TIMELINE ========== -->
+  <section class="section" style="padding-top: 0;">
+    <div class="container" style="max-width: 800px;">
+      
+      <!-- Upcoming Events -->
+      <div class="schedule-section">
+        <h2 class="schedule-section-title i18n" data-el="<span class='dot'></span> Ερχονται σύντομα" data-en="<span class='dot'></span> Coming up next">
+          <span class="dot"></span> Ερχονται σύντομα
+        </h2>
+        <div class="events-list" id="upcoming-events-container">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div class="glow-line" style="margin: 4rem 0;"></div>
+
+      <!-- Past Events -->
+      <div class="schedule-section">
+        <h2 class="schedule-section-title i18n" data-el="<span class='dot past'></span> Ολοκληρώθηκαν" data-en="<span class='dot past'></span> Completed">
+          <span class="dot past"></span> Ολοκληρώθηκαν
+        </h2>
+        <div class="events-list" id="past-events-container">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== CTA ========== -->
+  <section class="section cta-section">
+    <div class="cta-box reveal">
+      <div class="grid-pattern" aria-hidden="true"></div>
+      <h2 class="i18n" data-el="Δεν βρήκες βολική ημερομηνία;" data-en="Didn't find a convenient date?">
+        Δεν βρήκες βολική ημερομηνία;
+      </h2>
+      <p class="i18n" data-el="Ακολούθησε τον Odisseas στο Luma για να ενημερώνεσαι πρώτος για τα νέα workshops." data-en="Follow Odisseas on Luma to be the first to know about new workshops.">
+        Ακολούθησε τον Odisseas στο Luma για να ενημερώνεσαι πρώτος για τα νέα workshops.
+      </p>
+      <a href="https://luma.com/UnscriptedCircles" target="_blank" rel="noopener" class="btn btn-secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+        <span class="i18n" data-el="Ακολούθησε στο Luma" data-en="Follow on Luma">Ακολούθησε στο Luma</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ========== SCRIPTS ========== -->
+  <script src="shared.js"></script>
+  <script>
+    // Initialize shared components
+    VB.init();
+
+    // Event rendering logic
+    function renderEvents() {
+      const allEvents = VB.getEvents();
+      const lang = VB.getCurrentLang();
+      
+      const upcomingContainer = document.getElementById('upcoming-events-container');
+      const pastContainer = document.getElementById('past-events-container');
+      
+      let upcomingHTML = '';
+      let pastHTML = '';
+      
+      // Sort upcoming events by date (ascending)
+      const upcoming = allEvents.filter(e => e.status === 'upcoming')
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+      // Sort past events by date (descending)
+      const past = allEvents.filter(e => e.status === 'past')
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      const monthNamesEL = ["ΙΑΝ", "ΦΕΒ", "ΜΑΡ", "ΑΠΡ", "ΜΑΙ", "ΙΟΥΝ", "ΙΟΥΛ", "ΑΥΓ", "ΣΕΠ", "ΟΚΤ", "ΝΟΕ", "ΔΕΚ"];
+      const monthNamesEN = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+      function createCard(e, isPast) {
+        const d = new Date(e.date);
+        const day = d.getDate();
+        const month = lang === 'el' ? monthNamesEL[d.getMonth()] : monthNamesEN[d.getMonth()];
+        const fullDate = VB.formatDate(e.date, lang);
+        
+        const title = lang === 'en' && e.titleEn ? e.titleEn : e.title;
+        const location = lang === 'en' && e.locationEn ? e.locationEn : e.location;
+        const desc = lang === 'en' && e.descriptionEn ? e.descriptionEn : e.description;
+        
+        const badgeHTML = isPast 
+          ? `<div class="event-status-badge completed">
+               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+               ${lang === 'el' ? 'Ολοκληρωθηκε' : 'Completed'}
+             </div>`
+          : `<div class="event-status-badge upcoming">
+               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+               ${lang === 'el' ? 'Ερχεται' : 'Upcoming'}
+             </div>`;
+             
+        const btnHTML = isPast || !e.lumaLink
+          ? ''
+          : `<a href="${e.lumaLink}" target="_blank" rel="noopener" class="btn btn-primary btn-sm" style="margin-top: 0.5rem;">
+               ${lang === 'el' ? 'Εγγραφή στο Luma' : 'Register on Luma'}
+             </a>`;
+
+        return `
+          <div class="event-card reveal ${isPast ? 'past-event' : ''}">
+            <div class="event-date-badge">
+              <span class="day">${day}</span>
+              <span class="month">${month}</span>
+            </div>
+            <div class="event-card-content">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <h3 class="event-card-title" style="margin-bottom: 0;">${title}</h3>
+                ${badgeHTML}
+              </div>
+              
+              <div class="event-card-meta">
+                <span title="Ημερομηνία">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  ${fullDate}
+                </span>
+                <span title="Τοποθεσία">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                  ${location}
+                </span>
+                <span title="Ώρα">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  ${e.time}
+                </span>
+              </div>
+              
+              <p class="event-card-desc">${desc}</p>
+              ${btnHTML}
+            </div>
+          </div>
+        `;
+      }
+
+      upcoming.forEach(e => upcomingHTML += createCard(e, false));
+      past.forEach(e => pastHTML += createCard(e, true));
+
+      const emptyMsg = lang === 'el' 
+        ? '<p style="color: var(--text-tertiary); font-style: italic;">Δεν υπάρχουν events προς το παρόν.</p>' 
+        : '<p style="color: var(--text-tertiary); font-style: italic;">No events at the moment.</p>';
+
+      upcomingContainer.innerHTML = upcomingHTML || emptyMsg;
+      pastContainer.innerHTML = pastHTML || emptyMsg;
+      
+      // Re-trigger scroll reveal for new elements
+      VB.initReveal();
+    }
+
+    // Initial render
+    renderEvents();
+
+    // Re-render when language changes
+    window.addEventListener('langChanged', renderEvents);
+  </script>
+
+</body>
+</html>

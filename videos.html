@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Βίντεο | Vibe & Build</title>
+  <meta name="description" content="Παρακολουθήστε recordings και tutorials από τα Vibe & Build workshops. / Watch recordings and tutorials from Vibe & Build workshops.">
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+  <!-- ========== HERO ========== -->
+  <section class="page-hero">
+    <span class="section-label i18n" data-el="Περιεχόμενο" data-en="Content">Περιεχόμενο</span>
+    <h1 class="section-title i18n" data-el="Παρακολούθησε & Μάθε" data-en="Watch & Learn">Παρακολούθησε & Μάθε</h1>
+    <p class="section-subtitle i18n" 
+       data-el="Δες recordings, tutorials και demos από τα workshops μας." 
+       data-en="Watch recordings, tutorials, and demos from our workshops.">
+       Δες recordings, tutorials και demos από τα workshops μας.
+    </p>
+  </section>
+
+  <!-- ========== VIDEOS ========== -->
+  <section class="section" style="padding-top: 0;">
+    <div class="container" style="max-width: 900px;">
+      
+      <!-- Featured Video -->
+      <div id="featured-video-container" class="reveal">
+        <!-- Injected via JS -->
+      </div>
+
+      <div class="glow-line" style="margin: 3rem 0;"></div>
+
+      <h2 class="schedule-section-title i18n" style="margin-bottom: 1.5rem;" data-el="Περισσότερα Βίντεο" data-en="More Videos">Περισσότερα Βίντεο</h2>
+      
+      <!-- Video Gallery -->
+      <div class="video-gallery-grid" id="video-gallery-container">
+        <!-- Injected via JS -->
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== CTA ========== -->
+  <section class="section cta-section">
+    <div class="cta-box reveal">
+      <div class="grid-pattern" aria-hidden="true"></div>
+      <h2 class="i18n" data-el="Θέλεις να συμμετέχεις στο επόμενο;" data-en="Want to join the next one?">
+        Θέλεις να συμμετέχεις στο επόμενο;
+      </h2>
+      <p class="i18n" data-el="Έλα να χτίσουμε μαζί στο επόμενο live workshop." data-en="Let's build together at the next live workshop.">
+        Έλα να χτίσουμε μαζί στο επόμενο live workshop.
+      </p>
+      <a href="schedule.html" class="btn btn-primary" style="margin-top: 1rem;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        <span class="i18n" data-el="Δες το Πρόγραμμα" data-en="View Schedule">Δες το Πρόγραμμα</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ========== SCRIPTS ========== -->
+  <script src="shared.js"></script>
+  <script>
+    // Initialize shared components
+    VB.init();
+
+    // Video rendering logic
+    function getYoutubeId(url) {
+      if (!url) return null;
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    function renderVideos() {
+      const allVideos = VB.getVideos();
+      const lang = VB.getCurrentLang();
+      
+      const featuredContainer = document.getElementById('featured-video-container');
+      const galleryContainer = document.getElementById('video-gallery-container');
+      
+      if (allVideos.length === 0) {
+        const emptyMsg = lang === 'el' 
+          ? '<p style="color: var(--text-tertiary); font-style: italic; text-align: center;">Δεν υπάρχουν βίντεο προς το παρόν.</p>' 
+          : '<p style="color: var(--text-tertiary); font-style: italic; text-align: center;">No videos available at the moment.</p>';
+        featuredContainer.innerHTML = emptyMsg;
+        galleryContainer.innerHTML = '';
+        return;
+      }
+
+      // Find featured or default to first
+      let featuredVideo = allVideos.find(v => v.featured) || allVideos[0];
+      
+      // If we have a URL hash ?v=... use that as featured
+      const urlParams = new URLSearchParams(window.location.search);
+      const requestedId = urlParams.get('v');
+      if (requestedId) {
+        const found = allVideos.find(v => v.id === requestedId);
+        if (found) featuredVideo = found;
+      }
+
+      // Render Featured
+      const featuredTitle = lang === 'en' && featuredVideo.titleEn ? featuredVideo.titleEn : featuredVideo.title;
+      const featuredDesc = lang === 'en' && featuredVideo.descriptionEn ? featuredVideo.descriptionEn : featuredVideo.description;
+      const ytId = getYoutubeId(featuredVideo.url);
+      
+      let iframeHtml = `<div style="padding: 4rem; text-align: center; color: var(--text-tertiary);">Μη έγκυρο URL βίντεο</div>`;
+      if (ytId) {
+        iframeHtml = `<iframe src="https://www.youtube.com/embed/${ytId}?autoplay=0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+      }
+
+      featuredContainer.innerHTML = `
+        <div class="featured-video-wrapper">
+          ${iframeHtml}
+        </div>
+        <div class="featured-video-info">
+          <h3>${featuredTitle}</h3>
+          ${featuredDesc ? `<p>${featuredDesc}</p>` : ''}
+        </div>
+      `;
+
+      // Render Gallery
+      const otherVideos = allVideos.filter(v => v.id !== featuredVideo.id);
+      
+      if (otherVideos.length === 0) {
+        galleryContainer.innerHTML = '';
+        return;
+      }
+
+      let galleryHtml = '';
+      otherVideos.forEach(v => {
+        const title = lang === 'en' && v.titleEn ? v.titleEn : v.title;
+        const desc = lang === 'en' && v.descriptionEn ? v.descriptionEn : v.description;
+        const vYtId = getYoutubeId(v.url);
+        
+        const thumbUrl = vYtId 
+          ? `https://img.youtube.com/vi/${vYtId}/maxresdefault.jpg` 
+          : 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzFhMTAzMCIvPjwvc3ZnPg==';
+
+        galleryHtml += `
+          <div class="video-card reveal" onclick="window.location.href='?v=${v.id}'">
+            <div class="video-thumbnail">
+              <img src="${thumbUrl}" alt="${title}" style="position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0.7;">
+              <div class="video-play-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              </div>
+            </div>
+            <h3 class="video-card-title">${title}</h3>
+            ${desc ? `<p class="video-card-desc">${desc.substring(0, 80)}${desc.length > 80 ? '...' : ''}</p>` : ''}
+          </div>
+        `;
+      });
+
+      galleryContainer.innerHTML = galleryHtml;
+      
+      // Re-trigger reveal
+      VB.initReveal();
+    }
+
+    // Initial render
+    renderEvents = renderVideos; // Alias for consistency if needed, but we just call it directly
+    renderVideos();
+
+    // Re-render when language changes
+    window.addEventListener('langChanged', renderVideos);
+  </script>
+
+</body>
+</html>
